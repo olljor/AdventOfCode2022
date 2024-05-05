@@ -14,5 +14,8 @@ class Day8Main
 
         int numberOfVisibleTrees = forestHandler.FindVisibleTrees();
         Console.WriteLine(numberOfVisibleTrees);
+
+        int scenicScore = forestHandler.FindOpening();
+        Console.WriteLine(scenicScore);
     }
 }

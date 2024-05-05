@@ -9,13 +9,10 @@ internal class ForestHandler
 {
     public int[,] forest = new int[0, 0];
 
-    private List<IDictionary<int, int>> northSide;
-    private List<IDictionary<int, int>> westSide;
-    private List<IDictionary<int, int>> eastSide;
-    private List<IDictionary<int, int>> southSide;
+    private List<IDictionary<int, int>> northSide, westSide, eastSide, southSide;
 
     // Turns the input data from a list of strings to a matrix 
-    public void SetForest(IEnumerable<string> inputData)
+    internal void SetForest(IEnumerable<string> inputData)
     {
         var inputDataList = inputData.ToList();
 
@@ -38,23 +35,23 @@ internal class ForestHandler
         {
             for (int j = 1; j < forest.GetLength(1) - 1; j++)
             {
-                int hight = forest[i, j];
-                if (northSide[j - 1][hight] >= i)
+                int height = forest[i, j];
+                if (northSide[j - 1][height] >= i)
                 {
                     visibleTrees++;
                     continue;
                 }
-                else if (westSide[i - 1][hight] >= j)
+                else if (westSide[i - 1][height] >= j)
                 {
                     visibleTrees++;
                     continue;
                 }
-                else if (eastSide[i - 1][hight] <= j)
+                else if (eastSide[i - 1][height] <= j)
                 {
                     visibleTrees++;
                     continue;
                 }
-                else if (southSide[j - 1][hight] <= i)
+                else if (southSide[j - 1][height] <= i)
                 {
                     visibleTrees++;
                     continue;
@@ -65,7 +62,63 @@ internal class ForestHandler
         return visibleTrees;
     }
 
-    public async Task CircleForestAsync()
+
+    internal int FindOpening()
+    {
+        IDictionary<Tuple<int, int>, int> scores = new Dictionary<Tuple<int, int>, int>();
+
+        for (int i = 1; i < forest.GetLength(0) - 1; i++)
+        {
+            for (int j = 1; j < forest.GetLength(1) - 1; j++)
+            {
+                scores.Add(GetTreesScenicScore(i, j));
+            }
+        }
+
+        return scores.Values.Max();
+    }
+
+    private KeyValuePair<Tuple<int, int>, int> GetTreesScenicScore(int row, int col)
+    {
+        int height = forest[row, col];
+
+        int northScore = 0;
+        for (int i = row - 1; i >= 0; i--)
+        {
+            northScore++;
+            if (height <= forest[i, col])
+                break;
+        }
+
+        int westScore = 0;
+        for (int j = col - 1; j >= 0; j--)
+        {
+            westScore++;
+            if (height <= forest[row, j])
+                break;
+        }
+
+        int eastScore = 0;
+        for (int j = col + 1; j < forest.GetLength(1); j++)
+        {
+            eastScore++;
+            if (height <= forest[row, j])
+                break;
+        }
+
+        int southScore = 0;
+        for (int i = row + 1; i < forest.GetLength(0); i++)
+        {
+            southScore++;
+            if (height <= forest[i, col])
+                break;
+        }
+
+        int score = northScore * westScore * eastScore * southScore; 
+        return new KeyValuePair<Tuple<int, int>, int>(new Tuple<int, int>(row, col), score);
+    }
+
+    internal async Task CircleForestAsync()
     {
         var northTask = Task.Run(() => FindLineOfSightNorth());
         var westTask = Task.Run(() => FindLineOfSightWest());
@@ -78,16 +131,6 @@ internal class ForestHandler
         westSide = westTask.Result;
         eastSide = eastTask.Result;
         southSide = southTask.Result;
-
-        Console.WriteLine(northSide.Count);
-        Console.WriteLine(westSide.Count);
-        Console.WriteLine(eastSide.Count);
-        Console.WriteLine(southSide.Count);
-
-        foreach (var item in northSide[0])
-        {
-            Console.WriteLine(item.Key + " index " + item.Value);
-        }
     }
 
     // Finds when each possible height of the trees appears from the North
@@ -131,7 +174,6 @@ internal class ForestHandler
         }
         return dictionary;
     }
-
 
     // Finds when each possible height of the trees appears from the West
     private List<IDictionary<int, int>> FindLineOfSightWest()
