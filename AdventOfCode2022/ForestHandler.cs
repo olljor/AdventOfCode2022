@@ -58,10 +58,8 @@ internal class ForestHandler
                 }
             }
         }
-
         return visibleTrees;
     }
-
 
     internal int FindOpening()
     {
@@ -161,7 +159,7 @@ internal class ForestHandler
         };
 
         int highestTree = -1;
-        for (int i = 0; i < forest.GetLength(1); i++)
+        for (int i = 0; i < forest.GetLength(0); i++)
         {
             if (forest[i, line] > highestTree)
             {
@@ -247,7 +245,7 @@ internal class ForestHandler
         };
 
         int highestTree = -1;
-        for (int i = forest.GetLength(0) - 1; i >= 0; i--)
+        for (int i = forest.GetLength(1) - 1; i >= 0; i--)
         {
             if (forest[line, i] > highestTree)
             {
